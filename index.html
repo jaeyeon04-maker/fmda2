@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>센트럴점 핵심 매출 분석 웹 보고서</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .gradient-card-1 {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+        .gradient-card-2 {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        .gradient-card-3 {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+        .gradient-card-4 {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        }
+    </style>
+</head>
+<body class="text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">매출 분석 대시보드</h1>
+                    <p class="text-xs text-slate-400">센트럴점 핵심 성과 및 전 점포 비교 리포트</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm">
+                <span class="bg-slate-800 text-blue-400 px-3 py-1.5 rounded-full font-medium border border-slate-700 hidden md:flex items-center gap-1.5">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    분석 기간: 2026.08.01 ~ 2026.09.24 (55일간)
+                </span>
+                <!-- Theme Switcher Button -->
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 border border-slate-700" title="화면 테마 변경">
+                    <i id="themeIcon" data-lucide="moon" class="w-4 h-4 text-yellow-400"></i>
+                    <span id="themeText" class="hidden sm:inline">다크 모드</span>
+                </button>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">인쇄 / PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Title Banner & Highlights -->
+        <section class="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 transition-colors">
+            <div>
+                <div class="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 border border-blue-100 dark:border-blue-900/50">
+                    <i data-lucide="award" class="w-4 h-4"></i> 대표 플래그십 매장
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    센트럴점 매출 성과 보고서
+                </h2>
+                <p class="text-slate-600 dark:text-slate-300 mt-2 max-w-2xl text-sm sm:text-base leading-relaxed">
+                    센트럴점은 전체 3개 점포 매출의 <strong class="text-blue-600 dark:text-blue-400 font-bold">42.7%를 차지하는 1위 매장</strong>으로, 전 점포 중 가장 높은 구매 전환율(<strong class="text-blue-600 dark:text-blue-400 font-bold">46.44%</strong>)을 기록하며 강한 고객 결제력을 보여주고 있습니다.
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                <div class="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3.5 text-center flex-1 md:w-28">
+                    <span class="block text-xs font-medium text-slate-500 dark:text-slate-400">매출 순위</span>
+                    <span class="text-xl font-bold text-blue-600 dark:text-blue-400">전체 1위</span>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3.5 text-center flex-1 md:w-28">
+                    <span class="block text-xs font-medium text-slate-500 dark:text-slate-400">구매 전환율</span>
+                    <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">46.44%</span>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3.5 text-center flex-1 md:w-28">
+                    <span class="block text-xs font-medium text-slate-500 dark:text-slate-400">주말 프리미엄</span>
+                    <span class="text-xl font-bold text-purple-600 dark:text-purple-400">+33.0%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Metrics Cards Grid -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Card 1 -->
+            <div class="gradient-card-1 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-blue-100 text-xs font-medium">센트럴점 총 매출액</p>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold mt-1">223,843,230원</h3>
+                    </div>
+                    <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
+                        <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-blue-100 gap-1">
+                    <span class="bg-white/20 px-2 py-0.5 rounded font-semibold text-white">42.7%</span>
+                    <span>전체 3개 점포 총 매출 대비 비중</span>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="gradient-card-2 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-emerald-100 text-xs font-medium">방문고객 및 구매건수</p>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold mt-1">14,691 명</h3>
+                        <p class="text-xs text-emerald-100 mt-0.5">총 6,823건 결제</p>
+                    </div>
+                    <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
+                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-emerald-100 gap-1">
+                    <span class="bg-white/20 px-2 py-0.5 rounded font-semibold text-white">일평균 267명</span>
+                    <span>방문 (일평균 124건 결제)</span>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="gradient-card-3 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-purple-100 text-xs font-medium">구매 전환율 (전 점포 1위)</p>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold mt-1">46.44%</h3>
+                    </div>
+                    <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-purple-100 gap-1">
+                    <span class="bg-white/20 px-2 py-0.5 rounded font-semibold text-white">+2.04%p</span>
+                    <span>전 점포 평균(44.40%) 대비 우수</span>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="gradient-card-4 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-orange-100 text-xs font-medium">객단가 (구매 기준)</p>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold mt-1">32,807원</h3>
+                        <p class="text-xs text-orange-100 mt-0.5">방문 기준: 15,237원</p>
+                    </div>
+                    <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
+                        <i data-lucide="shopping-bag" class="w-6 h-6 text-white"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-orange-100 gap-1">
+                    <span class="bg-white/20 px-2 py-0.5 rounded font-semibold text-white">안정적 수치</span>
+                    <span>구매건당 평균 결제 금액</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Charts Row 1: Store Comparison -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Stores Sales & Conversion Bar Chart -->
+            <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                            <i data-lucide="store" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                            점포별 총 매출 및 구매 전환율 비교
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">센트럴점, 파크점, 리버점 매출 실적 및 전환율 성과</p>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs">
+                        <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300"><span class="w-3 h-3 bg-blue-600 rounded-sm inline-block"></span> 매출액</span>
+                        <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300"><span class="w-3 h-3 bg-emerald-500 rounded-sm inline-block"></span> 구매 전환율</span>
+                    </div>
+                </div>
+                <div class="h-72">
+                    <canvas id="storeComparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Sales Share Doughnut Chart -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-colors">
+                <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-1 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                        점포별 매출 점유율
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">전체 총 매출 5.24억 원 중 비중</p>
+                    <div class="h-52 relative flex items-center justify-center">
+                        <canvas id="salesShareChart"></canvas>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> 센트럴점
+                        </span>
+                        <span class="font-bold text-slate-900 dark:text-white">223.8백만 원 (42.7%)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> 파크점
+                        </span>
+                        <span class="font-bold text-slate-900 dark:text-white">164.6백만 원 (31.4%)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500"></span> 리버점
+                        </span>
+                        <span class="font-bold text-slate-900 dark:text-white">136.1백만 원 (25.9%)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Central Store Period Trend & Weekday vs Weekend Analysis -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Period Sales Trend -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                            <i data-lucide="line-chart" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+                            센트럴점 기간별 일평균 매출 추이
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">9월 간편식 할인 행사 전/후 매출 변화</p>
+                    </div>
+                    <span class="text-xs bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-md font-semibold border border-emerald-200 dark:border-emerald-800">
+                        행사기 +22.9% 신장
+                    </span>
+                </div>
+                <div class="h-64">
+                    <canvas id="periodTrendChart"></canvas>
+                </div>
+                <div class="mt-4 bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl text-xs text-slate-600 dark:text-slate-300 leading-relaxed border border-slate-100 dark:border-slate-800">
+                    <p>💡 <strong>분석 포인트:</strong> 9월 초 간편식 할인 행사(9/4~9/10) 기간 일평균 매출이 <strong>481.4만 원</strong>으로 폭증했습니다. 행사 종료 후에도 평시(391.8만 원) 대비 <strong>+3.0%</strong> 상승한 403.6만 원을 기록하며 잔여 효과가 유지되고 있습니다.</p>
+                </div>
+            </div>
+
+            <!-- Weekday vs Weekend Analysis -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                            <i data-lucide="calendar-range" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+                            주중 vs 주말 매출 패턴 (상권형 매장)
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">요일별 일평균 매출 비교 및 주말 집중도</p>
+                    </div>
+                    <span class="text-xs bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-md font-semibold border border-purple-200 dark:border-purple-800">
+                        주말 +33.0% 차이
+                    </span>
+                </div>
+                <div class="h-64">
+                    <canvas id="dayPatternChart"></canvas>
+                </div>
+                <div class="mt-4 bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl text-xs text-slate-600 dark:text-slate-300 leading-relaxed border border-slate-100 dark:border-slate-800">
+                    <p>💡 <strong>분석 포인트:</strong> 토요일 최고 실적(<strong>525.9만 원</strong>)을 바탕으로 주말 일평균(484.7만 원)이 평일(364.4만 원)보다 33% 높습니다. 반면 <strong>화요일(308.9만 원)</strong>이 주중 최저 실적을 나타내고 있습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Tables Section -->
+        <section class="space-y-6">
+            <!-- Table 1: Central Store Key Performance Breakdown -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
+                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                            <i data-lucide="table" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                            1. 센트럴점 핵심 성과 상세 요약
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">2026-08-01 ~ 2026-09-24 실적 기준</p>
+                    </div>
+                    <span class="text-xs bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full font-medium border border-blue-100 dark:border-blue-900/50">
+                        3개 점포 중 종합 1위
+                    </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
+                        <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 uppercase border-b border-slate-200 dark:border-slate-800">
+                            <tr>
+                                <th scope="col" class="px-6 py-3.5 font-semibold">구분</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">센트럴점 실적</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold">주요 특징 및 분석</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-blue-600"></span> 총 매출액
+                                </td>
+                                <td class="px-6 py-4 font-bold text-blue-700 dark:text-blue-400 text-right">223,843,230 원</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                    전체 3개 점포 총 매출(524,552,540원)의 <span class="font-semibold text-slate-900 dark:text-white">42.7% 차지 (점포 1위)</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 방문고객수 합계
+                                </td>
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white text-right">14,691 명</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">일평균 약 <span class="font-semibold text-slate-900 dark:text-white">267명</span> 집객 (전체 방문객의 40.7%)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span> 구매건수 합계
+                                </td>
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white text-right">6,823 건</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">일평균 약 <span class="font-semibold text-slate-900 dark:text-white">124건</span> 결제 진행</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition bg-emerald-50/30 dark:bg-emerald-950/20">
+                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span> 구매율 (전환율)
+                                </td>
+                                <td class="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400 text-right">46.44%</td>
+                                <td class="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium">
+                                    <span class="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded font-bold text-xs mr-1">전 점포 1위</span>
+                                    리버점(41.92%), 파크점(43.94%) 대비 압도적 결제 전환력
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-orange-400"></span> 객단가 (방문 기준)
+                                </td>
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white text-right">15,237 원</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">매출액 ÷ 방문고객수 (전 점포 평균 14,548원 대비 +689원 높은 수치)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-orange-600"></span> 객단가 (구매 기준)
+                                </td>
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white text-right">32,807 원</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">매출액 ÷ 구매건수 (전 점포 평균 32,764원 수준과 유사 유지)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table 2: All Stores Comparison Matrix -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
+                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                            <i data-lucide="layers" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                            2. 전체 점포 실적 비교 표
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">센트럴점, 파크점, 리버점 종합 성과 비교</p>
+                    </div>
+                    <div class="relative text-xs w-full sm:w-auto">
+                        <input type="text" id="tableSearch" placeholder="점포명 검색..." onkeyup="filterTable()" class="w-full sm:w-48 pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 dark:text-slate-200 placeholder-slate-400">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2"></i>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300" id="comparisonTable">
+                        <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 uppercase border-b border-slate-200 dark:border-slate-800">
+                            <tr>
+                                <th scope="col" class="px-6 py-3.5 font-semibold">점포명</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">방문고객수 (명)</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">구매건수 (건)</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">매출액 (원)</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">구매율 (%)</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">객단가 (방문)</th>
+                                <th scope="col" class="px-6 py-3.5 font-semibold text-right">객단가 (구매)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Central Store Row (Highlighted) -->
+                            <tr class="bg-blue-50/50 dark:bg-blue-950/40 font-medium hover:bg-blue-50 dark:hover:bg-blue-950/60 transition border-l-4 border-l-blue-600">
+                                <td class="px-6 py-4 text-slate-900 dark:text-white font-bold flex items-center gap-2">
+                                    <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">1위</span>
+                                    센트럴점
+                                </td>
+                                <td class="px-6 py-4 text-right">14,691 명</td>
+                                <td class="px-6 py-4 text-right">6,823 건</td>
+                                <td class="px-6 py-4 text-right font-bold text-blue-700 dark:text-blue-400">223,843,230 원</td>
+                                <td class="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400">46.44%</td>
+                                <td class="px-6 py-4 text-right">15,237 원</td>
+                                <td class="px-6 py-4 text-right">32,807 원</td>
+                            </tr>
+                            <!-- Park Store Row -->
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 text-slate-900 dark:text-white font-semibold">파크점</td>
+                                <td class="px-6 py-4 text-right">11,434 명</td>
+                                <td class="px-6 py-4 text-right">5,024 건</td>
+                                <td class="px-6 py-4 text-right font-semibold text-slate-900 dark:text-white">164,589,350 원</td>
+                                <td class="px-6 py-4 text-right text-slate-700 dark:text-slate-300">43.94%</td>
+                                <td class="px-6 py-4 text-right">14,395 원</td>
+                                <td class="px-6 py-4 text-right">32,761 원</td>
+                            </tr>
+                            <!-- River Store Row -->
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                                <td class="px-6 py-4 text-slate-900 dark:text-white font-semibold">리버점</td>
+                                <td class="px-6 py-4 text-right">9,932 명</td>
+                                <td class="px-6 py-4 text-right">4,163 건</td>
+                                <td class="px-6 py-4 text-right font-semibold text-slate-900 dark:text-white">136,119,960 원</td>
+                                <td class="px-6 py-4 text-right text-slate-700 dark:text-slate-300">41.92%</td>
+                                <td class="px-6 py-4 text-right">13,705 원</td>
+                                <td class="px-6 py-4 text-right">32,698 원</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-slate-100 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-t-2 border-slate-300 dark:border-slate-700">
+                            <tr>
+                                <td class="px-6 py-4">전체 합계 / 평균</td>
+                                <td class="px-6 py-4 text-right">36,057 명</td>
+                                <td class="px-6 py-4 text-right">16,010 건</td>
+                                <td class="px-6 py-4 text-right text-blue-800 dark:text-blue-300">524,552,540 원</td>
+                                <td class="px-6 py-4 text-right text-emerald-700 dark:text-emerald-400">44.40% (평균)</td>
+                                <td class="px-6 py-4 text-right">14,548 원 (평균)</td>
+                                <td class="px-6 py-4 text-right">32,764 원 (평균)</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategic Action Plan & Insights Section -->
+        <section class="bg-gradient-to-r from-slate-900 to-blue-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="bg-blue-500/20 p-2.5 rounded-xl border border-blue-400/30">
+                    <i data-lucide="lightbulb" class="w-6 h-6 text-yellow-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">센트럴점 핵심 전략 제언 및 실행 방안</h3>
+                    <p class="text-xs text-blue-200">높은 전환율(46.4%)을 극대화하기 위한 매출 성장 액션 플랜</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <!-- Strategy Card 1 -->
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/10 hover:border-blue-400/50 transition">
+                    <div class="flex items-center gap-2 font-semibold text-blue-300 mb-2">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        1. 주중 최저 매출일(화요일) 집중 타깃 프로모션
+                    </div>
+                    <p class="text-slate-300 text-xs leading-relaxed">
+                        화요일 일평균 매출은 <strong>308.9만 원</strong>으로 토요일(525.9만 원) 대비 약 41% 저조합니다. 화요일 전용 <span class="text-yellow-300 font-semibold">'타임 세일'</span>이나 <span class="text-yellow-300 font-semibold">'주중 한정 혜택'</span>으로 방문 유인을 강화해야 합니다.
+                    </p>
+                </div>
+
+                <!-- Strategy Card 2 -->
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/10 hover:border-emerald-400/50 transition">
+                    <div class="flex items-center gap-2 font-semibold text-emerald-300 mb-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        2. 성공적인 간편식 프로모션 정례화
+                    </div>
+                    <p class="text-slate-300 text-xs leading-relaxed">
+                        9월 초 간편식 행사에서 <strong>+22.9% 매출 신장 효과</strong>가 입증되었습니다. 월 1~2회 '간편식 데이' 또는 매주 주말 '카테고리 특가'를 정례화하여 지속적인 동력을 확보합니다.
+                    </p>
+                </div>
+
+                <!-- Strategy Card 3 -->
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/10 hover:border-purple-400/50 transition">
+                    <div class="flex items-center gap-2 font-semibold text-purple-300 mb-2">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        3. 구매 전환율 유지 및 객단가 증대 연계
+                    </div>
+                    <p class="text-slate-300 text-xs leading-relaxed">
+                        46.44%라는 높은 전환율을 유지하면서, 연관 구매를 유도하는 <span class="text-yellow-300 font-semibold">동선 재배치</span>나 <span class="text-yellow-300 font-semibold">묶음 할인 상품</span>을 기획하여 구매 객단가(현재 3.28만 원) 상승을 도모합니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500 mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>© 2026 Sales Analytics Dashboard. 센트럴점 핵심 매출 분석 보고서.</p>
+        </div>
+    </footer>
+
+    <!-- Charting & Scripting Logic -->
+    <script>
+        // Data Definitions
+        const storeData = {
+            labels: ['센트럴점', '파크점', '리버점'],
+            sales: [223843230, 164589350, 136119960],
+            conversion: [46.44, 43.94, 41.92]
+        };
+
+        // Chart Instance References
+        let chartStore, chartShare, chartPeriod, chartDay;
+
+        // Theme colors config for Chart.js
+        function getChartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                text: isDark ? '#cbd5e1' : '#475569',
+                grid: isDark ? '#334155' : '#f1f5f9',
+                border: isDark ? '#0f172a' : '#ffffff'
+            };
+        }
+
+        // Initialize Charts Function
+        function initCharts() {
+            const colors = getChartColors();
+
+            // Chart 1: Store Comparison Bar + Line Chart
+            const ctxStore = document.getElementById('storeComparisonChart').getContext('2d');
+            chartStore = new Chart(ctxStore, {
+                type: 'bar',
+                data: {
+                    labels: storeData.labels,
+                    datasets: [
+                        {
+                            label: '매출액 (백만원)',
+                            data: storeData.sales.map(v => (v / 1000000).toFixed(1)),
+                            backgroundColor: ['#2563eb', '#6366f1', '#94a3b8'],
+                            borderRadius: 8,
+                            yAxisID: 'y',
+                            order: 2
+                        },
+                        {
+                            label: '구매 전환율 (%)',
+                            data: storeData.conversion,
+                            type: 'line',
+                            borderColor: '#10b981',
+                            backgroundColor: '#10b981',
+                            borderWidth: 3,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderWidth: 3,
+                            yAxisID: 'y1',
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: true, 
+                            position: 'top',
+                            labels: { color: colors.text }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.yAxisID === 'y') {
+                                        return `매출액: ${Number(context.raw).toLocaleString()}백만 원`;
+                                    } else {
+                                        return `구매 전환율: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '매출액 (백만 원)', color: colors.text },
+                            ticks: { color: colors.text },
+                            grid: { color: colors.grid }
+                        },
+                        y1: {
+                            position: 'right',
+                            min: 35,
+                            max: 50,
+                            title: { display: true, text: '전환율 (%)', color: colors.text },
+                            ticks: { color: colors.text },
+                            grid: { drawOnChartArea: false }
+                        },
+                        x: {
+                            ticks: { color: colors.text },
+                            grid: { color: colors.grid }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Store Sales Share Doughnut
+            const ctxShare = document.getElementById('salesShareChart').getContext('2d');
+            chartShare = new Chart(ctxShare, {
+                type: 'doughnut',
+                data: {
+                    labels: ['센트럴점', '파크점', '리버점'],
+                    datasets: [{
+                        data: [42.7, 31.4, 25.9],
+                        backgroundColor: ['#2563eb', '#6366f1', '#94a3b8'],
+                        borderWidth: 2,
+                        borderColor: colors.border
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Chart 3: Period Sales Trend
+            const ctxPeriod = document.getElementById('periodTrendChart').getContext('2d');
+            chartPeriod = new Chart(ctxPeriod, {
+                type: 'bar',
+                data: {
+                    labels: ['8월 평시 (8/1~9/3)', '9월 행사기 (9/4~9/10)', '행사 후 (9/11~9/24)'],
+                    datasets: [{
+                        label: '일평균 매출액 (만원)',
+                        data: [391.8, 481.4, 403.6],
+                        backgroundColor: ['#94a3b8', '#059669', '#3b82f6'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `일평균: ${context.raw}만 원`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 300,
+                            title: { display: true, text: '일평균 매출 (만원)', color: colors.text },
+                            ticks: { color: colors.text },
+                            grid: { color: colors.grid }
+                        },
+                        x: {
+                            ticks: { color: colors.text },
+                            grid: { color: colors.grid }
+                        }
+                    }
+                }
+            });
+
+            // Chart 4: Weekday vs Weekend Pattern
+            const ctxDay = document.getElementById('dayPatternChart').getContext('2d');
+            chartDay = new Chart(ctxDay, {
+                type: 'line',
+                data: {
+                    labels: ['평일 평균', '화요일 (최저)', '주말 평균', '토요일 (최고)'],
+                    datasets: [{
+                        label: '일평균 매출액 (만원)',
+                        data: [364.4, 308.9, 484.7, 525.9],
+                        borderColor: '#ea580c',
+                        backgroundColor: 'rgba(234, 88, 12, 0.15)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#ea580c',
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `매출액: ${context.raw}만 원`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 250,
+                            title: { display: true, text: '매출액 (만원)', color: colors.text },
+                            ticks: { color: colors.text },
+                            grid: { color: colors.grid }
+                        },
+                        x: {
+                            ticks: { color: colors.text },
+                            grid: { color: colors.grid }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dark / Light Mode Toggle Logic
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            if (isDark) {
+                themeIcon.setAttribute('data-lucide', 'sun');
+                themeIcon.className = 'w-4 h-4 text-amber-300';
+                themeText.textContent = '라이트 모드';
+            } else {
+                themeIcon.setAttribute('data-lucide', 'moon');
+                themeIcon.className = 'w-4 h-4 text-yellow-400';
+                themeText.textContent = '다크 모드';
+            }
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+
+            // Refresh chart options with updated theme colors
+            const colors = getChartColors();
+            [chartStore, chartPeriod, chartDay].forEach(chart => {
+                if (chart) {
+                    if (chart.options.scales.y) {
+                        chart.options.scales.y.ticks.color = colors.text;
+                        chart.options.scales.y.title.color = colors.text;
+                        chart.options.scales.y.grid.color = colors.grid;
+                    }
+                    if (chart.options.scales.y1) {
+                        chart.options.scales.y1.ticks.color = colors.text;
+                        chart.options.scales.y1.title.color = colors.text;
+                    }
+                    if (chart.options.scales.x) {
+                        chart.options.scales.x.ticks.color = colors.text;
+                        chart.options.scales.x.grid.color = colors.grid;
+                    }
+                    if (chart.options.plugins.legend) {
+                        chart.options.plugins.legend.labels.color = colors.text;
+                    }
+                    chart.update();
+                }
+            });
+
+            if (chartShare) {
+                chartShare.data.datasets[0].borderColor = colors.border;
+                chartShare.update();
+            }
+        }
+
+        // Interactive Table Filtering Function
+        function filterTable() {
+            const input = document.getElementById('tableSearch');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('comparisonTable');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length - 1; i++) {
+                const td = tr[i].getElementsByTagName('td')[0];
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Safely Initialize Icons & Charts on Window Load
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            initCharts();
+        });
+    </script>
+</body>
+</html>
